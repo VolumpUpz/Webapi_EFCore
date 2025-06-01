@@ -19,6 +19,7 @@ namespace Webapi_EFCore.Configurations
             builder.Property(e => e.Salary);
 
 
+            //One-to-one Employee <-> EmployeeDetails
             builder.HasOne(e => e.EmployeeDetails)
                 .WithOne(e => e.Employee)
                 .HasForeignKey<EmployeeDetails>(d => d.EmployeeId);
