@@ -1,4 +1,5 @@
-﻿using Webapi_EFCore.Models;
+﻿using Webapi_EFCore.DTOs;
+using Webapi_EFCore.Models;
 
 namespace Webapi_EFCore.Repositories.Interfaces
 {

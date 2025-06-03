@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Webapi_EFCore.DTOs;
 using Webapi_EFCore.Models;
 using Webapi_EFCore.Repositories.Interfaces;
+using Webapi_EFCore.Services.Interfaces;
 
 namespace Webapi_EFCore.Controllers
 {
@@ -12,16 +13,18 @@ namespace Webapi_EFCore.Controllers
     {
 
         private readonly IEmployeeRepository _employeeRepository;
+        private readonly IEmployeeService _employeeService;
 
-        public EmployeeController(IEmployeeRepository employeeRepository)
+        public EmployeeController(IEmployeeRepository employeeRepository, IEmployeeService employeeService)
         {
             _employeeRepository = employeeRepository;
+            _employeeService = employeeService;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var employee = await _employeeRepository.GetAllAsync();
+            var employee = await _employeeService.GetAllAsync();
             return Ok(employee);
         }
 
