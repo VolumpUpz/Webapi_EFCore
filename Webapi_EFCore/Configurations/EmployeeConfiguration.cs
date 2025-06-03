@@ -8,7 +8,6 @@ namespace Webapi_EFCore.Configurations
     {
         public void Configure(EntityTypeBuilder<Employee> builder)
         {
-            builder.ToTable("Employees");
 
             builder.HasKey(e => e.EmployeeId);
 
@@ -19,7 +18,7 @@ namespace Webapi_EFCore.Configurations
             builder.Property(e => e.Salary);
 
 
-            //One-to-one Employee <-> EmployeeDetails
+            //One-to-one Employee <-> EmployeeDetails //
             builder.HasOne(e => e.EmployeeDetails)
                 .WithOne(e => e.Employee)
                 .HasForeignKey<EmployeeDetails>(d => d.EmployeeId);
@@ -28,9 +27,7 @@ namespace Webapi_EFCore.Configurations
                 .WithMany(e => e.Employees)
                 .HasForeignKey(e => e.EmployeeId);
 
-            builder.HasMany(e => e.Projects)
-                .WithMany(e => e.Employees)
-                .UsingEntity(j => j.ToTable("EmployeeProjects"));
+           
 
 
 

@@ -1,4 +1,6 @@
-﻿namespace Webapi_EFCore.Models
+﻿using System.Text.Json.Serialization;
+
+namespace Webapi_EFCore.Models
 {
     public class EmployeeDetails
     {
@@ -9,6 +11,8 @@
         public string Email { get; set; }
 
         public int EmployeeId { get; set; }
+
+        [JsonIgnore]
         public Employee Employee { get; set; }
     }
 }

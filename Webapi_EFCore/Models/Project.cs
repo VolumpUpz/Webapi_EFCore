@@ -5,6 +5,7 @@
         public int ProjectId { get; set; }
         public string Name { get; set; }
 
-        public ICollection<Employee> Employees { get; set; }
+
+        public ICollection<EmployeeProject> EmployeeProjects { get; set; } = new List<EmployeeProject>();
     }
 }

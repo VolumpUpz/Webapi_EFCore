@@ -21,21 +21,6 @@ namespace Webapi_EFCore.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("EmployeeProject", b =>
-                {
-                    b.Property<int>("EmployeesEmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProjectsProjectId")
-                        .HasColumnType("int");
-
-                    b.HasKey("EmployeesEmployeeId", "ProjectsProjectId");
-
-                    b.HasIndex("ProjectsProjectId");
-
-                    b.ToTable("EmployeeProjects", (string)null);
-                });
-
             modelBuilder.Entity("Webapi_EFCore.Models.Employee", b =>
                 {
                     b.Property<int>("EmployeeId")
@@ -62,7 +47,7 @@ namespace Webapi_EFCore.Migrations
 
                     b.HasIndex("ManagerId");
 
-                    b.ToTable("Employees", (string)null);
+                    b.ToTable("Employee");
                 });
 
             modelBuilder.Entity("Webapi_EFCore.Models.EmployeeDetails", b =>
@@ -96,6 +81,21 @@ namespace Webapi_EFCore.Migrations
                     b.ToTable("EmployeeDetails");
                 });
 
+            modelBuilder.Entity("Webapi_EFCore.Models.EmployeeProject", b =>
+                {
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.HasKey("EmployeeId", "ProjectId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("EmployeeProject");
+                });
+
             modelBuilder.Entity("Webapi_EFCore.Models.Manager", b =>
                 {
                     b.Property<int>("ManagerId")
@@ -114,7 +114,7 @@ namespace Webapi_EFCore.Migrations
 
                     b.HasKey("ManagerId");
 
-                    b.ToTable("Managers");
+                    b.ToTable("Manager");
                 });
 
             modelBuilder.Entity("Webapi_EFCore.Models.Project", b =>
@@ -131,22 +131,7 @@ namespace Webapi_EFCore.Migrations
 
                     b.HasKey("ProjectId");
 
-                    b.ToTable("Projects");
-                });
-
-            modelBuilder.Entity("EmployeeProject", b =>
-                {
-                    b.HasOne("Webapi_EFCore.Models.Employee", null)
-                        .WithMany()
-                        .HasForeignKey("EmployeesEmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Webapi_EFCore.Models.Project", null)
-                        .WithMany()
-                        .HasForeignKey("ProjectsProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.ToTable("Project");
                 });
 
             modelBuilder.Entity("Webapi_EFCore.Models.Employee", b =>
@@ -171,15 +156,41 @@ namespace Webapi_EFCore.Migrations
                     b.Navigation("Employee");
                 });
 
+            modelBuilder.Entity("Webapi_EFCore.Models.EmployeeProject", b =>
+                {
+                    b.HasOne("Webapi_EFCore.Models.Employee", "Employee")
+                        .WithMany("EmployeeProjects")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Webapi_EFCore.Models.Project", "Project")
+                        .WithMany("EmployeeProjects")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Project");
+                });
+
             modelBuilder.Entity("Webapi_EFCore.Models.Employee", b =>
                 {
                     b.Navigation("EmployeeDetails")
                         .IsRequired();
+
+                    b.Navigation("EmployeeProjects");
                 });
 
             modelBuilder.Entity("Webapi_EFCore.Models.Manager", b =>
                 {
                     b.Navigation("Employees");
+                });
+
+            modelBuilder.Entity("Webapi_EFCore.Models.Project", b =>
+                {
+                    b.Navigation("EmployeeProjects");
                 });
 #pragma warning restore 612, 618
         }
