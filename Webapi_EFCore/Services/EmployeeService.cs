@@ -21,5 +21,13 @@ namespace Webapi_EFCore.Services
             var employees = await _employeeRepository.GetAllAsync();
             return _mapper.Map<List<EmployeeDTO>>(employees);
         }
+
+        public async Task<EmployeeDTO> GetByIdAsync(int id)
+        {
+            var employee = await _employeeRepository.GetByIdAsync(id);
+            return _mapper.Map<EmployeeDTO>(employee);
+        }
+
+
     }
 }

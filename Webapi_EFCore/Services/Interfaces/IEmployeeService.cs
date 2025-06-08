@@ -6,5 +6,6 @@ namespace Webapi_EFCore.Services.Interfaces
     public interface IEmployeeService
     {
         Task<List<EmployeeDTO>> GetAllAsync();
+        Task<EmployeeDTO?> GetByIdAsync(int id);
     }
 }
