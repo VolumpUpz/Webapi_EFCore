@@ -18,6 +18,9 @@ namespace Webapi_EFCore.Configurations
             builder.Property(e => e.Username)
                 .HasMaxLength(50)
                 .HasColumnName("username");
+
+            builder.Property(u => u.IsDeleted)
+                .HasColumnName("is_deleted");
         }
     }
 }
