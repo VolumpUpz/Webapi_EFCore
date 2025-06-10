@@ -56,7 +56,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddSingleton<JwtTokenService>();
+builder.Services.AddScoped<JwtTokenService>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

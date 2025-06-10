@@ -1,7 +1,9 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Webapi_EFCore.Data;
 using Webapi_EFCore.Models;
 
 namespace Webapi_EFCore.Services
@@ -10,10 +12,12 @@ namespace Webapi_EFCore.Services
     {
         private readonly IConfiguration _config;
         private readonly Dictionary<string, string> _refreshTokens = new();
+        private readonly ApplicationDbContext _context;
 
-        public JwtTokenService(IConfiguration config)
+        public JwtTokenService(IConfiguration config, ApplicationDbContext context)
         {
             _config = config;
+            _context = context;
         }
 
         public string GenerateAccessToken(User user)
@@ -39,17 +43,43 @@ namespace Webapi_EFCore.Services
         }
 
         public string GenerateRefreshToken(string username)
+        {
+            return Guid.NewGuid().ToString();
+        }
 
-
+        public async Task<string> GenerateAndSaveRefreshTokenAsync(string username)
         {
             var token = Guid.NewGuid().ToString();
-            _refreshTokens[username] = token;
+            var refreshToken = new RefreshToken
+            {
+                Token = token,
+                Username = username,
+                ExpiryDate = DateTime.UtcNow.AddMinutes(double.Parse(_config["Jwt:RefreshTokenExpirationMinutes"])),
+                IsRevoked = false
+            };
+
+            _context.RefreshTokens.Add(refreshToken);
+            await _context.SaveChangesAsync();
             return token;
         }
 
-        public bool ValidateRefreshToken(string username, string refreshToken)
+        public async Task<bool> ValidateRefreshTokenAsync(string token, string username)
         {
-            return _refreshTokens.TryGetValue(username, out var validToken) && validToken == refreshToken;
+            var rt = await _context.RefreshTokens
+                .FirstOrDefaultAsync(t => t.Token == token && t.Username == username && !t.IsRevoked);
+
+            return rt != null && rt.ExpiryDate > DateTime.UtcNow;
+        }
+
+        public async Task RevokeTokenAsync(string token)
+        {
+            var rt = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Token == token);
+            if (rt != null)
+            {
+                //update
+                rt.IsRevoked = true;
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

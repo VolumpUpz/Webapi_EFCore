@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Webapi_EFCore.Data;
 using Webapi_EFCore.DTOs;
+using Webapi_EFCore.Models;
 using Webapi_EFCore.Services;
 using Webapi_EFCore.Services.Interfaces;
 
@@ -16,10 +18,12 @@ namespace Webapi_EFCore.Controllers
     {
         private readonly IUserService _userService;
         private readonly JwtTokenService _jwt;
-        public AuthController(IUserService userService, JwtTokenService jwt)
+        private readonly ApplicationDbContext _context;
+        public AuthController(IUserService userService, JwtTokenService jwt, ApplicationDbContext context)
         {
             _userService = userService;
             _jwt = jwt;
+            _context = context;
         }
 
 
@@ -33,7 +37,7 @@ namespace Webapi_EFCore.Controllers
             }
 
             var accessToken = _jwt.GenerateAccessToken(user);
-            var refreshToken = _jwt.GenerateRefreshToken(user.Username);
+            var refreshToken = await _jwt.GenerateAndSaveRefreshTokenAsync(user.Username);
 
             return Ok(new JwtResponse
             {
@@ -56,25 +60,29 @@ namespace Webapi_EFCore.Controllers
             return Ok();
         }
 
-        //[HttpPost("refresh")]
-        //public async Task<IActionResult> Refresh([FromBody] JwtResponse tokenRequest)
-        //{
-        //    var handler = new JwtSecurityTokenHandler();
-        //    var token = handler.ReadJwtToken(tokenRequest.AccessToken);
-        //    var username = token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest req)
+        {
+            var isValid = await _jwt.ValidateRefreshTokenAsync(req.RefreshToken, req.Username);
+            if (!isValid)
+                return Unauthorized("Invalid refresh token");
 
-        //    if (username is null || !_jwt.ValidateRefreshToken(username, tokenRequest.RefreshToken))
-        //    {
-        //        return Unauthorized("Invalid refresh token");
-        //    }
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == req.Username);
+            if (user == null) return Unauthorized("not found user");
 
-        //    var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-        //    if (user == null) return Unauthorized();
+            var newAccessToken = _jwt.GenerateAccessToken(user);
+            var newRefreshToken = await _jwt.GenerateAndSaveRefreshTokenAsync(user.Username);
 
-        //    var newAccessToken = _tokenService.GenerateAccessToken(user);
-        //    var newRefreshToken = _tokenService.GenerateRefreshToken(user.Username);
+            await _jwt.RevokeTokenAsync(req.RefreshToken);
 
-        //    return Ok(new AuthResponse { AccessToken = newAccessToken, RefreshToken = newRefreshToken });
-        //}
+            return Ok(new { AccessToken = newAccessToken, RefreshToken = newRefreshToken });
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequest req)
+        {
+            await _jwt.RevokeTokenAsync(req.RefreshToken);
+            return Ok(new { Message = "Logged out" });
+        }
     }
 }
